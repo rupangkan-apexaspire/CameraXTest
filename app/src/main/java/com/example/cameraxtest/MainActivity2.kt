@@ -25,14 +25,18 @@ import java.util.concurrent.ExecutorService
 import android.provider.MediaStore
 
 import android.content.ContentValues
+import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
 import android.view.View
+import com.bumptech.glide.Glide
+import com.bumptech.glide.annotation.GlideExtension
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.Serializable
 import kotlin.collections.ArrayList
 
 
@@ -44,7 +48,7 @@ class MainActivity2 : AppCompatActivity() {
     private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
 
-    private lateinit var fileList: MutableList<File>
+    private lateinit var fileList: ArrayList<String>
 
     private lateinit var cameraExecutor: ExecutorService
 
@@ -53,7 +57,7 @@ class MainActivity2 : AppCompatActivity() {
         viewBinding = ActivityMain2Binding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        fileList = mutableListOf()
+        fileList = ArrayList()
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -123,10 +127,20 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     private fun setFiles(file: File) {
-        fileList.add(file)
+        fileList.add(file.absolutePath)
         Log.d(TAG, "Files $fileList")
+
         if(fileList.isNotEmpty()) {
             viewBinding.done.visibility = View.VISIBLE
+            Glide.with(this).load(file).into(viewBinding.done)
+        }
+        if(viewBinding.done.visibility == View.VISIBLE) {
+            viewBinding.done.setOnClickListener{
+                var intent = Intent(this, ImagePreview::class.java)
+                intent.putExtra("files", fileList)
+                startActivity(intent)
+
+            }
         }
     }
 
@@ -151,13 +165,10 @@ class MainActivity2 : AppCompatActivity() {
                 Log.i(TAG, "Size: $size")
                 name = cursor.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
             }
-
         }
 
         return name
     }
-
-    private fun captureVideo() {}
 
     private fun startCamera() {
 //        Toast.makeText(applicationContext, "Hehehe", Toast.LENGTH_SHORT).show()
