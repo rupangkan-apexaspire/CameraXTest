@@ -14,14 +14,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CameraXTest">
         <activity
-            android:name=".MainActivity2"
-            android:exported="false" />
-        <activity
-            android:name=".ImagePreview"
-            android:exported="false" />
-        <activity android:name=".MainActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.StartActivity"
             android:exported="true">
             <intent-filter>

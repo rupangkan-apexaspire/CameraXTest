@@ -30,8 +30,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.example.cameraxtest.ImagePreview
-import com.example.cameraxtest.MainActivity2
 import com.example.cameraxtest.R
 import com.example.cameraxtest.databinding.FragmentImageBinding
 import com.example.cameraxtest.models.AppViewModel
