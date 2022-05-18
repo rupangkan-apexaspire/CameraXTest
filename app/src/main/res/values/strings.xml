@@ -5,4 +5,20 @@
     <string name="stop_capture">Stop Capture</string>
     <string name="done">Done</string>
     <string name="delete">Delete</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="gender">Gender</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="kg">KG-I</string>
+    <string name="standard">Class</string>
+    <string name="kg_ii">KG-II</string>
+    <string name="kg_iii">KG-III</string>
+    <string name="interests">Interests</string>
+    <string name="cricket">Cricket</string>
+    <string name="football">Football</string>
+    <string name="basketball">Basketball</string>
 </resources>

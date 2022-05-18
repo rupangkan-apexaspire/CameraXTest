@@ -1,86 +1,99 @@
-package com.example.cameraxtest
+package com.example.cameraxtest.fragments
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import androidx.camera.video.Recorder
-import com.example.cameraxtest.databinding.ActivityMain2Binding
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.content.pm.PackageManager
-import android.util.Log
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import java.util.concurrent.Executors
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.*
-import androidx.camera.video.VideoCapture
-import androidx.core.content.PermissionChecker
-import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.ExecutorService
-import android.provider.MediaStore
-
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.Cursor
+import android.media.Image
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.bumptech.glide.annotation.GlideExtension
+import com.example.cameraxtest.ImagePreview
+import com.example.cameraxtest.MainActivity2
+import com.example.cameraxtest.R
+import com.example.cameraxtest.databinding.FragmentImageBinding
+import com.example.cameraxtest.models.AppViewModel
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.Serializable
-import kotlin.collections.ArrayList
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
+class ImageFragment : Fragment() {
 
-class MainActivity2 : AppCompatActivity() {
-    private lateinit var viewBinding: ActivityMain2Binding
-
+    private var viewBinding: FragmentImageBinding? = null
     private var imageCapture: ImageCapture? = null
-
-    private var videoCapture: VideoCapture<Recorder>? = null
-    private var recording: Recording? = null
-
-//    private lateinit var fileList: ArrayList<String>
-    private lateinit var myApplication: MainApplication
-
     private lateinit var cameraExecutor: ExecutorService
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewBinding = ActivityMain2Binding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
-        myApplication = application as MainApplication
+    private val sharedViewModel: AppViewModel by activityViewModels()
 
-//        fileList = ArrayList()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        val fragmentImageBinding = FragmentImageBinding.inflate(inflater, container, false)
+        viewBinding = fragmentImageBinding
+        return fragmentImageBinding.root
+    }
 
-        if(myApplication.fileList.isNullOrEmpty() || myApplication.fileList.toString() == "[]") {
-            viewBinding.done.visibility = View.GONE
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewBinding?.imageFragment = this
+
+        if(sharedViewModel.fileList.isNullOrEmpty()) {
+            viewBinding?.done?.visibility = View.GONE
+        } else if(sharedViewModel.fileList.isNotEmpty()) {
+            viewBinding?.done?.visibility = View.VISIBLE
+            Glide.with(requireActivity().applicationContext).load(sharedViewModel.fileList[0]).into(viewBinding!!.done)
         }
+
+        traverse()
 
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                requireActivity(), ImageFragment.REQUIRED_PERMISSIONS, ImageFragment.REQUEST_CODE_PERMISSIONS
+            )
         }
 
         // Set up the listeners for take photo and video capture buttons
-        viewBinding.imageCaptureButton.setOnClickListener {
+        viewBinding?.imageCaptureButton?.setOnClickListener {
             takePhoto()
             Log.d(TAG, "onCreate: takephoto cliked")
         }
-//        viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
-
         cameraExecutor = Executors.newSingleThreadExecutor()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewBinding = null
     }
 
     private fun takePhoto() {
@@ -90,7 +103,7 @@ class MainActivity2 : AppCompatActivity() {
         Log.d(TAG, "takePhoto: HEHE $imageCapture")
 
         // Create time stamped name and MediaStore entry.
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+        val name = SimpleDateFormat(ImageFragment.FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
@@ -102,7 +115,7 @@ class MainActivity2 : AppCompatActivity() {
 
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(contentResolver,
+            .Builder(requireActivity().contentResolver,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 contentValues)
             .build()
@@ -111,21 +124,21 @@ class MainActivity2 : AppCompatActivity() {
         // been taken
         imageCapture.takePicture(
             outputOptions,
-            ContextCompat.getMainExecutor(this),
+            ContextCompat.getMainExecutor(requireActivity().applicationContext),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    val parcelFileDescriptor = contentResolver.openFileDescriptor(output.savedUri!!, "r", null) ?: return
+                    val parcelFileDescriptor = requireActivity().contentResolver.openFileDescriptor(output.savedUri!!, "r", null) ?: return
                     val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-                    val file = File(cacheDir, contentResolver.getFileName(output.savedUri!!))
+                    val file = File(requireActivity().cacheDir, requireActivity().contentResolver.getFileName(output.savedUri!!))
                     val outputStream = FileOutputStream(file)
                     inputStream.copyTo(outputStream)
                     setFiles(file)
                     val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
                 }
             }
@@ -135,34 +148,31 @@ class MainActivity2 : AppCompatActivity() {
     private fun setFiles(file: File) {
 //        fileList.add(file.absolutePath)
 //        Log.d(TAG, "Files $fileList")
-        
-        myApplication.fileList.add(file.absolutePath)
-        
-        if(myApplication.fileList.isNotEmpty()){
-            viewBinding.done.visibility = View.VISIBLE
-            Glide.with(applicationContext).load(file).into(viewBinding.done)
-        } else if(myApplication.fileList.isNullOrEmpty()) {
-            viewBinding.done.visibility = View.GONE
+        sharedViewModel.fileList.add(file.absolutePath)
+
+        if(sharedViewModel.fileList.isNullOrEmpty()){
+            viewBinding?.done?.visibility = View.GONE
+        } else if(sharedViewModel.fileList.isNotEmpty()){
+            viewBinding?.done?.visibility = View.VISIBLE
+            Glide.with(requireActivity().applicationContext).load(file).into(viewBinding!!.done)
         }
 
-        Log.d(TAG, "setFiles: ${myApplication.fileList}")
-//        if(fileList.isNotEmpty()) {
-//            viewBinding.done.visibility = View.VISIBLE
-//            Glide.with(this).load(file).into(viewBinding.done)
-//        }
-        if(viewBinding.done.visibility == View.VISIBLE) {
-            viewBinding.done.setOnClickListener{
-                var intent = Intent(this, ImagePreview::class.java)
-//                intent.putExtra("files", fileList)
-                startActivity(intent)
+        traverse()
 
+    }
+
+    private fun traverse() {
+        if(viewBinding?.done?.visibility == View.VISIBLE){
+            viewBinding?.done?.setOnClickListener{
+                val action = ImageFragmentDirections.actionImageFragmentToImagePreviewFragment()
+                this.findNavController().navigate(action)
             }
         }
     }
 
     @SuppressLint("Range")
     fun ContentResolver.getFileName(uri: Uri): String {
-        val cursor: Cursor? = contentResolver.query(
+        val cursor: Cursor? = requireActivity().contentResolver.query(
             uri, null, null, null, null, null)
 
         var name = ""
@@ -188,7 +198,7 @@ class MainActivity2 : AppCompatActivity() {
 
     private fun startCamera() {
 //        Toast.makeText(applicationContext, "Hehehe", Toast.LENGTH_SHORT).show()
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireActivity().applicationContext)
 
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -198,7 +208,7 @@ class MainActivity2 : AppCompatActivity() {
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(viewBinding.viewFinder.surfaceProvider)
+                    it.setSurfaceProvider(viewBinding?.viewFinder?.surfaceProvider)
                 }
 
             imageCapture = ImageCapture.Builder()
@@ -219,31 +229,26 @@ class MainActivity2 : AppCompatActivity() {
                 Log.e(TAG, "Use case binding failed", exc)
             }
 
-        }, ContextCompat.getMainExecutor(this))
+        }, ContextCompat.getMainExecutor(requireActivity().applicationContext))
     }
 
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+    private fun allPermissionsGranted() = ImageFragment.REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
+            requireActivity().baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults:
         IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+        if (requestCode == ImageFragment.REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
             } else {
-                Toast.makeText(this,
+                Toast.makeText(context,
                     "Permissions not granted by the user.",
                     Toast.LENGTH_SHORT).show()
-                finish()
+                activity?.finish()
             }
         }
     }
