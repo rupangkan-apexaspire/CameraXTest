@@ -11,9 +11,8 @@
         android:label="Welcome"
         tools:layout="@layout/fragment_start">
         <action
-            android:id="@+id/action_startFragment_to_imageFragment"
-            app:destination="@id/imageFragment"
-            app:popUpToInclusive="true" />
+            android:id="@+id/action_startFragment_to_formFragment"
+            app:destination="@id/formFragment" />
     </fragment>
     <fragment
         android:id="@+id/imageFragment"
@@ -29,5 +28,18 @@
         android:id="@+id/imagePreviewFragment"
         android:name="com.example.cameraxtest.fragments.ImagePreviewFragment"
         android:label="Preview Images"
-        tools:layout="@layout/fragment_image_preview" />
+        tools:layout="@layout/fragment_image_preview" >
+        <action
+            android:id="@+id/action_imagePreviewFragment_to_formFragment"
+            app:destination="@id/formFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/formFragment"
+        android:name="com.example.cameraxtest.fragments.FormFragment"
+        android:label="Form Fillup"
+        tools:layout="@layout/fragment_form">
+        <action
+            android:id="@+id/action_formFragment_to_imageFragment"
+            app:destination="@id/imageFragment" />
+    </fragment>
 </navigation>

@@ -4,10 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".fragments.FormFragment">
 
+    <data>
+        <variable
+            name="formFragment"
+            type="com.example.cameraxtest.fragments.FormFragment" />
+    </data>
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        android:layout_height="match_parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -187,9 +192,12 @@
                 app:layout_constraintTop_toBottomOf="@id/menu" />
 
             <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/form_recycler_view"
                 android:layout_margin="10dp"
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="500dp"
+                tools:listitem="@layout/image_view_list"
                 app:layout_constraintTop_toBottomOf="@+id/take_photo" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

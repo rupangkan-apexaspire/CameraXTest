@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cameraxtest.R
 import com.example.cameraxtest.adapter.ImagePreviewAdapter
@@ -38,6 +39,15 @@ class ImagePreviewFragment : Fragment() {
         viewBinding?.imageViewRcView?.adapter = adapter
         viewBinding?.imageViewRcView?.setHasFixedSize(true)
 
+        checkFileList()
+
+        if(viewBinding?.done?.visibility == View.VISIBLE) {
+            viewBinding?.done?.setOnClickListener{
+                val action = ImagePreviewFragmentDirections.actionImagePreviewFragmentToFormFragment()
+                this.findNavController().navigate(action)
+            }
+        }
+
         viewBinding?.delete?.setOnClickListener{
             val visiblePosition: Int = manager.findFirstCompletelyVisibleItemPosition()
 //            Log.d(TAG, "onCreate: $visiblePosition")
@@ -47,10 +57,19 @@ class ImagePreviewFragment : Fragment() {
                 sharedViewModel.fileList.removeAt(visiblePosition)
 //                contentResolver.delete(Uri.parse(myApplication.fileList[visiblePosition]), null, null)
                 adapter.notifyDataSetChanged()
+                checkFileList()
 //                Log.d(TAG, "deleteFiles: ${myApplication.fileList}")
             }
         }
 
+    }
+
+    private fun checkFileList() {
+        if(sharedViewModel.fileList.isNotEmpty()){
+            viewBinding?.done?.visibility = View.VISIBLE
+        } else if(sharedViewModel.fileList.isNullOrEmpty()) {
+            viewBinding?.done?.visibility = View.GONE
+        }
     }
 
     override fun onDestroyView() {

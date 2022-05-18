@@ -29,7 +29,7 @@ class StartFragment : Fragment() {
         binding?.startFragment = this
 
         binding!!.Button.setOnClickListener {
-            val action = StartFragmentDirections.actionStartFragmentToImageFragment()
+            val action = StartFragmentDirections.actionStartFragmentToFormFragment()
             this.findNavController().navigate(action)
 
         }
