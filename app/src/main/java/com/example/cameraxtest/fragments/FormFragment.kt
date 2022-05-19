@@ -2,10 +2,9 @@ package com.example.cameraxtest.fragments
 
 import android.os.Bundle
 import android.util.Log
+import android.view.*
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,12 +43,39 @@ class FormFragment : Fragment() {
             viewBinding?.formRecyclerView?.setHasFixedSize(true)
         }
 
+        if(sharedViewModel.title != "") {
+            viewBinding?.titleEditText?.setText(sharedViewModel.title)
+        }
+
+        if(sharedViewModel.description != "") {
+            viewBinding?.descriptionEditText?.setText(sharedViewModel.description)
+        }
+
+        if(sharedViewModel.genderCheckedId != null) {
+            viewBinding?.gender?.check(sharedViewModel.genderCheckedId!!)
+        }
+
+        if(sharedViewModel.standardCheckedId != null) {
+            viewBinding?.standard?.check(sharedViewModel.standardCheckedId!!)
+        }
+
+
+//        if(sharedViewModel.interests != "") {
+//            viewBinding?.interests?.setText(sharedViewModel.interests)
+//        }
+
         viewBinding?.takePhoto?.setOnClickListener{
+            sharedViewModel.title = viewBinding?.titleEditText?.text.toString()
+            sharedViewModel.description = viewBinding?.descriptionEditText?.text.toString()
+            sharedViewModel.genderCheckedId = viewBinding?.gender?.checkedRadioButtonId
+            sharedViewModel.standardCheckedId = viewBinding?.standard?.checkedRadioButtonId
+            sharedViewModel.interests = viewBinding?.interests?.text.toString()
             val action = FormFragmentDirections.actionFormFragmentToImageFragment()
             this.findNavController().navigate(action)
         }
 
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -60,6 +86,15 @@ class FormFragment : Fragment() {
             viewBinding?.formRecyclerView?.adapter = adapter
             viewBinding?.formRecyclerView?.setHasFixedSize(true)
         }
+
+        val interests = resources.getStringArray(R.array.interests)
+        val arrayAdapter = ArrayAdapter(requireContext(), R.layout.drop_down_layout, interests)
+        viewBinding?.interests?.setAdapter(arrayAdapter)
+
+        if(sharedViewModel.interests != "") {
+            viewBinding?.interests?.setText(sharedViewModel.interests)
+        }
+
     }
 
     override fun onDestroyView() {

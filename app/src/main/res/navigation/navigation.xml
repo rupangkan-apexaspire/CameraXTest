@@ -12,7 +12,8 @@
         tools:layout="@layout/fragment_start">
         <action
             android:id="@+id/action_startFragment_to_formFragment"
-            app:destination="@id/formFragment" />
+            app:destination="@id/formFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/imageFragment"
@@ -21,7 +22,8 @@
         tools:layout="@layout/fragment_image">
         <action
             android:id="@+id/action_imageFragment_to_imagePreviewFragment"
-            app:destination="@id/imagePreviewFragment" />
+            app:destination="@id/imagePreviewFragment"
+            app:popUpToInclusive="true" />
 
     </fragment>
     <fragment
@@ -31,7 +33,8 @@
         tools:layout="@layout/fragment_image_preview" >
         <action
             android:id="@+id/action_imagePreviewFragment_to_formFragment"
-            app:destination="@id/formFragment" />
+            app:destination="@id/formFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/formFragment"
@@ -40,6 +43,7 @@
         tools:layout="@layout/fragment_form">
         <action
             android:id="@+id/action_formFragment_to_imageFragment"
-            app:destination="@id/imageFragment" />
+            app:destination="@id/imageFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>

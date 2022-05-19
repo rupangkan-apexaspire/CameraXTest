@@ -18,8 +18,11 @@
     <string name="kg_ii">KG-II</string>
     <string name="kg_iii">KG-III</string>
     <string name="interests">Interests</string>
-    <string name="cricket">Cricket</string>
-    <string name="football">Football</string>
-    <string name="basketball">Basketball</string>
+    <string-array name="interests">
+        <item name="cricket">Cricket</item>
+        <item name="football">Football</item>
+        <item name="basketball">Basketball</item>
+    </string-array>
+
     <string name="form_header">Enter Details</string>
 </resources>
